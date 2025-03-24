@@ -59,6 +59,36 @@
 - Consider port conflicts before launching services.
 - Local verification doesn't guarantee production success.
 
+### When using tools
+- BatchTool runs concurrently what tools run sequentially.
+- GlobTool for files, GrepTool for content, agent for complexity.
+- View before Edit, understand before changing.
+- The specific search finds what the general search misses.
+- Edit with context; include lines before and after changes.
+- Dispatch an agent when searches become explorations.
+
+### When using Git
+- Commit often, push deliberately.
+- Review changes before committing.
+- Write commit messages that explain why, not what.
+- Test before pushing to shared branches.
+- Pull before starting work to avoid merge conflicts.
+- Branch for features, not for fixes.
+- Never commit directly to main in shared repos.
+- Use .gitignore before committing sensitive files.
+
+### When reflecting on process
+- Document both successes and failures.
+- Note patterns that repeat across projects.
+- Identify bottlenecks in your workflow, not just the code.
+- Record assumptions that proved incorrect.
+- Create checklists from repeated mistakes.
+- Journal decision points, not just outcomes.
+- Write notes as if speaking to your future self.
+- Organize reflections by pattern, not chronology.
+- Review past notes before starting similar projects.
+- Connect insights across different domains and projects.
+
 ## Command to Load Proverbs
 
 Add this to your .bashrc or .zshrc to easily load the proverbs:
