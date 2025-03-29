@@ -1,0 +1,15 @@
+{
+  "name": "coolors-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for generating color palettes using Coolors.co",
+  "main": "coolors-mcp.js",
+  "scripts": {
+    "start": "node coolors-mcp.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "playwright": "^1.40.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

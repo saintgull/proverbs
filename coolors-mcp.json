@@ -1,0 +1,43 @@
+{
+  "name": "coolors",
+  "port": 3000,
+  "description": "Generate color palettes using Coolors.co",
+  "functions": [
+    {
+      "name": "random_palette",
+      "description": "Generate a random color palette",
+      "parameters": {},
+      "returns": {
+        "palette": {
+          "type": "array",
+          "description": "An array of colors in hex format",
+          "items": {
+            "type": "string",
+            "description": "A color in hex format (e.g., \"#FF5733\")"
+          }
+        }
+      }
+    },
+    {
+      "name": "palette_from_color",
+      "description": "Generate a color palette starting from a specific color",
+      "parameters": {
+        "color": {
+          "type": "string",
+          "description": "The starting color in hex format (e.g., \"#FF5733\" or \"FF5733\")",
+          "required": true
+        }
+      },
+      "returns": {
+        "palette": {
+          "type": "array",
+          "description": "An array of colors in hex format",
+          "items": {
+            "type": "string",
+            "description": "A color in hex format (e.g., \"#FF5733\")"
+          }
+        }
+      }
+    }
+  ]
+}
