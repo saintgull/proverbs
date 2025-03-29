@@ -1,9 +1,7 @@
-const express = require('express');
+// Import required modules
 const { chromium } = require('playwright');
-const app = express();
-const port = 3000;
-
-app.use(express.json());
+const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
+const { McpServer } = require('@modelcontextprotocol/sdk');
 
 // Function to validate hex color
 function isValidHex(hex) {
@@ -23,6 +21,7 @@ function expandHex(hex) {
   return hex;
 }
 
+// Get a random color palette from Coolors.co
 async function getRandomPalette() {
   const browser = await chromium.launch();
   const context = await browser.newContext();
@@ -52,12 +51,21 @@ async function getRandomPalette() {
     return colors;
   } catch (error) {
     console.error('Error getting random palette:', error);
-    throw error;
+    
+    // Fallback: Generate random colors
+    return [
+      '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase(),
+      '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase(),
+      '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase(),
+      '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase(),
+      '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase()
+    ];
   } finally {
     await browser.close();
   }
 }
 
+// Generate a color palette from a base color
 async function generatePaletteFromColor(baseColor) {
   const browser = await chromium.launch();
   const context = await browser.newContext();
@@ -112,7 +120,6 @@ async function generatePaletteFromColor(baseColor) {
     console.error(`Error generating palette from ${baseColor}:`, error);
     
     // Fallback: Generate a harmonious palette programmatically
-    // Here we implement a simple complementary color scheme
     try {
       const hex = expandHex(baseColor.replace('#', ''));
       
@@ -143,114 +150,102 @@ async function generatePaletteFromColor(baseColor) {
   }
 }
 
-// API endpoint to get a random palette
-app.post('/api/random-palette', async (req, res) => {
-  try {
-    const palette = await getRandomPalette();
-    res.json({ palette });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// API endpoint to generate a palette from a specific color
-app.post('/api/palette-from-color', async (req, res) => {
-  try {
-    const { color } = req.body;
-    
-    if (!color) {
-      return res.status(400).json({ error: 'Color is required' });
+// Create the MCP server
+async function main() {
+  console.log('Initializing Coolors MCP Server...');
+  
+  // Create a server with standard MCP implementation
+  const server = new McpServer({
+    implementation: {
+      name: 'coolors',
+      version: '1.0.0'
     }
-    
-    // Validate hex color
-    const hexColor = color.startsWith('#') ? color : `#${color}`;
-    if (!isValidHex(hexColor)) {
-      return res.status(400).json({ error: 'Invalid hex color. Use format #RRGGBB or RRGGBB' });
+  });
+  
+  // Add the random_palette tool
+  server.addTool({
+    name: 'random_palette',
+    description: 'Generate a random color palette',
+    parameters: {},
+    handler: async () => {
+      try {
+        console.log('Generating random palette...');
+        const palette = await getRandomPalette();
+        console.log('Generated palette:', palette);
+        return { palette };
+      } catch (error) {
+        console.error('Error in random_palette tool:', error);
+        throw error;
+      }
     }
-    
-    const palette = await generatePaletteFromColor(hexColor);
-    res.json({ palette });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// MCP endpoint to handle Claude's requests
-app.post('/mcp', async (req, res) => {
-  try {
-    const { name, arguments: args } = req.body;
-    
-    if (name === 'random_palette') {
-      const palette = await getRandomPalette();
-      res.json({ response: { palette } });
-    } else if (name === 'palette_from_color') {
-      const { color } = args;
-      
-      if (!color) {
-        return res.status(400).json({ error: 'Color is required' });
-      }
-      
-      // Validate hex color
-      const hexColor = color.startsWith('#') ? color : `#${color}`;
-      if (!isValidHex(hexColor)) {
-        return res.status(400).json({ error: 'Invalid hex color. Use format #RRGGBB or RRGGBB' });
-      }
-      
-      const palette = await generatePaletteFromColor(hexColor);
-      res.json({ response: { palette } });
-    } else {
-      res.status(400).json({ error: 'Unknown method name' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Coolors MCP Server listening on port ${port}`);
-});
-
-// Export mcp info for Claude
-module.exports = {
-  name: 'coolors',
-  description: 'Generate color palettes using Coolors.co',
-  functions: [
-    {
-      name: 'random_palette',
-      description: 'Generate a random color palette',
-      parameters: {},
-      returns: {
-        palette: {
-          type: 'array',
-          description: 'An array of colors in hex format',
-          items: {
-            type: 'string',
-            description: 'A color in hex format (e.g., "#FF5733")'
-          }
-        }
-      }
-    },
-    {
-      name: 'palette_from_color',
-      description: 'Generate a color palette starting from a specific color',
-      parameters: {
+  });
+  
+  // Add the palette_from_color tool
+  server.addTool({
+    name: 'palette_from_color',
+    description: 'Generate a color palette starting from a specific color',
+    parameters: {
+      type: 'object',
+      properties: {
         color: {
           type: 'string',
-          description: 'The starting color in hex format (e.g., "#FF5733" or "FF5733")',
-          required: true
+          description: 'The starting color in hex format (e.g., "#FF5733" or "FF5733")'
         }
       },
-      returns: {
-        palette: {
-          type: 'array',
-          description: 'An array of colors in hex format',
-          items: {
-            type: 'string',
-            description: 'A color in hex format (e.g., "#FF5733")'
-          }
+      required: ['color']
+    },
+    handler: async ({ color }) => {
+      try {
+        console.log(`Generating palette from color: ${color}`);
+        
+        if (!color) {
+          throw new Error('Color is required');
         }
+        
+        // Validate hex color
+        const hexColor = color.startsWith('#') ? color : `#${color}`;
+        if (!isValidHex(hexColor)) {
+          throw new Error('Invalid hex color. Use format #RRGGBB or RRGGBB');
+        }
+        
+        const palette = await generatePaletteFromColor(hexColor);
+        console.log('Generated palette:', palette);
+        return { palette };
+      } catch (error) {
+        console.error('Error in palette_from_color tool:', error);
+        throw error;
       }
     }
-  ]
-};
+  });
+  
+  // Connect to the client using stdio transport
+  const transport = new StdioServerTransport();
+  
+  // Handle server exit
+  process.on('SIGINT', async () => {
+    await server.close();
+    process.exit(0);
+  });
+  
+  process.stdin.on('close', async () => {
+    console.log('Standard input closed, shutting down...');
+    await server.close();
+    process.exit(0);
+  });
+  
+  // Start the server
+  try {
+    console.log('Connecting to MCP client...');
+    await server.connect(transport);
+    console.log('Coolors MCP Server connected and running');
+  } catch (error) {
+    console.error('Error connecting to MCP client:', error);
+    process.exit(1);
+  }
+}
+
+// Run the server
+main().catch(error => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

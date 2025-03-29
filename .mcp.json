@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+    "say": {
+      "command": "node",
+      "args": [
+        "node_modules/say-mcp-server/build/index.js"
+      ],
+      "env": {},
+      "cwd": "/Users/erinsaintgull/P"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp",
+        "--headless"
+      ],
+      "env": {},
+      "cwd": "/Users/erinsaintgull/P"
+    },
+    "exa": {
+      "command": "npx",
+      "args": [
+        "exa-mcp-server"
+      ],
+      "env": {
+        "EXA_API_KEY": "be3ad9e8-3b5c-48a9-a303-a06de7e11c32"
+      },
+      "cwd": "/Users/erinsaintgull/P"
+    },
+    "anti-bullshit": {
+      "command": "node",
+      "args": [
+        "/Users/erinsaintgull/P/anti-bullshit-mcp-server/build/index.js"
+      ],
+      "env": {},
+      "cwd": "/Users/erinsaintgull/P"
+    }
+  }
+}

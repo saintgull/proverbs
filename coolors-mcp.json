@@ -1,6 +1,6 @@
 {
   "name": "coolors",
-  "port": 3000,
+  "port": 3002,
   "description": "Generate color palettes using Coolors.co",
   "functions": [
     {
